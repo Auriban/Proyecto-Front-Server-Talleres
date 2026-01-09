@@ -9,9 +9,11 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./api-docs');
 
 const { connection } = require ('./config/dbConnect');
+const homeRoutes = require('./routes/home.routes');
 const tallerRoutes = require ('./routes/taller.routes');
 const authRoutes = require('./routes/auth.routes');
 const usuariosRoutes = require('./routes/user.routes');
+const inscripcionRoutes = require('./routes/inscripcion.routes');
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -42,7 +44,8 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/talleres', tallerRoutes);
 app.use('/api/usuarios', usuariosRoutes);
-app.use('/api/home', require('./routes/home.routes'));
+app.use('/api/home', homeRoutes);
+app.use('/api/inscripciones',inscripcionRoutes);
 
 /**
  * ARCHIVOS ESTÁTICOS - Sirve las imágenes subidas

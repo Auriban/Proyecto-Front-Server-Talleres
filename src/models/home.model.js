@@ -13,7 +13,10 @@ const homeContentSchema = new Schema({
   /** 
    * Título principal de la home (obligatorio) 
    * */
-  titulo: { type: String, required: true },
+  titulo: { 
+    type: String, 
+    required: true 
+  },
   
   /** 
    * Imagen de portada 
