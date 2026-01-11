@@ -29,9 +29,7 @@ app.use(express.json());
 /** 
  * CORS - Permite que React (puerto 5173) hable con el backend 
  * */
-app.use(cors({
-  origin: 'http://localhost:5173',               
-}));
+app.use(cors());  // Permite todos los orígenes
 
 /** 
  * Lee cookies (para el token de autenticación)
