@@ -56,6 +56,18 @@ const TallerSchema = new Schema({
       type: String,
       required: true
     },
+    localizacion: {
+      type: {
+        type: String,     
+        enum: ['Point'],
+        default: 'Point'
+      },
+      coordinates: {
+        type: [Number],    // [lng, lat]
+        default: [0, 0]
+      },
+      direccion: String
+    }
 })
 
 /**

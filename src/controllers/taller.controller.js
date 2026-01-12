@@ -28,6 +28,20 @@ const createTaller = async (req, res) =>{
       datos.imgTaller = `/uploads/talleres/${req.file.filename}`;
     }
 
+    if (datos.localizacion) {
+      // si viene como string (JSON)
+      if (typeof datos.localizacion === 'string') {
+        datos.localizacion = JSON.parse(datos.localizacion);
+      }
+    } else if (datos.lat && datos.lng && datos.direccion) {
+      // si vienen separados
+      datos.localizacion = {
+        type: 'Point',
+        coordinates: [Number(datos.lng), Number(datos.lat)], // ⚠️ lng primero
+        direccion: datos.direccion
+      };
+    }
+
     /** 
      * Crea el taller nuevo y lo guarda en la base de datos 
     */
@@ -139,38 +153,33 @@ const updateTaller = async (req, res) => {
   const { id } = req.params;
   
   try {
-    /** 
-     * Saca los datos nuevos del body 
-    */
-    const { titulo, descripcion, precio, fecha, categoria } = req.body;
+    // Sacamos todos los campos del body, incluyendo localizacion
+    const { titulo, descripcion, precio, fecha, categoria, direccion, lat, lng } = req.body;
     
-    /** 
-     * Si hay nueva foto, usa esa. Si no, mantiene la vieja 
-    */
+    // Si hay nueva foto, la usamos, sino mantenemos la vieja
     const imgTaller = req.file ? `/uploads/talleres/${req.file.filename}` : req.body.imgTaller;
-    
-    /** 
-     * Busca y actualiza el taller con los datos nuevos 
-    */
-    const tallerActualizado = await Taller.findByIdAndUpdate(
-      id, 
-      { titulo, descripcion, precio, fecha, categoria, imgTaller }, 
-      { new: true }
-    );
 
-    /** 
-     * Si no existe
-     * */
-    if (!tallerActualizado) {
-      return res.status(404).json({
-        ok: false,
-        msg: 'Taller no encontrado'
-      });
+    // Construimos localizacion si tenemos coordenadas
+    let localizacion;
+    if (lat && lng && direccion) {
+      localizacion = {
+        type: 'Point',
+        coordinates: [Number(lng), Number(lat)], // lng primero
+        direccion
+      };
     }
 
-    /**
-     * Devuelve el taller actualizado 
-     * */
+    // Creamos objeto de actualización
+    const updateData = { titulo, descripcion, precio, fecha, categoria, imgTaller };
+    if (localizacion) updateData.localizacion = localizacion;
+
+    // Actualizamos en Mongo
+    const tallerActualizado = await Taller.findByIdAndUpdate(id, updateData, { new: true });
+
+    if (!tallerActualizado) {
+      return res.status(404).json({ ok: false, msg: 'Taller no encontrado' });
+    }
+
     return res.status(200).json({
       ok: true,
       msg: 'Taller actualizado correctamente',
@@ -178,16 +187,11 @@ const updateTaller = async (req, res) => {
     });
 
   } catch (error) {
-    /** 
-     * Error al actualizar 
-     * */
     console.error('Error al actualizar el taller:', error);
-    return res.status(500).json({
-      ok: false,
-      msg: 'Error al actualizar el taller'
-    });
+    return res.status(500).json({ ok: false, msg: 'Error al actualizar el taller' });
   }
 };
+
 
 /**
  * Elimina un taller por su ID.
