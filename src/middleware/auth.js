@@ -38,7 +38,7 @@ const authMiddleware = async (req, res, next) => {
      * */
     const decoded = jwt.verify(token, JWT_SECRET);
     /** 
-     * Busca el usuario en la BD sin mostrar la contraseña 
+     * Busca un usuario en la base de datos usando su ID, espera la respuesta y guarda sus datos sin la contraseña.
      * */
     const usuario = await User.findById(decoded.id).select('-password');
     

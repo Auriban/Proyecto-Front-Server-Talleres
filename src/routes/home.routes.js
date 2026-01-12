@@ -20,6 +20,7 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'public/uploads/home/'),
   filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
 });
+
 const upload = multer({ 
   storage, 
   limits: { fileSize: 5 * 1024 * 1024 },

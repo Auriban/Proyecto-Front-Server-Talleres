@@ -13,12 +13,73 @@ const {
 } = require('../controllers/user.controller');
 
 const route = express.Router();
-
+/**
+ * @openapi
+ * /api/usuarios:
+ *   get:
+ *     tags:
+ *       - Usuarios
+ *     summary: Lista todos los usuarios (solo admin)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de usuarios
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Sin permisos (no admin)
+ */
 /**
  * GET /usuarios/ - Lista todos los usuarios
  * Solo admin puede ver la lista completa
  */
 route.get('/', authMiddleware, esAdmin, getUsuarios);
+
+/**
+ * @openapi
+ * /api/usuarios:
+ *   post:
+ *     tags:
+ *       - Usuarios
+ *     summary: Crear nuevo usuario (solo admin)
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "Pepe"
+ *               email:
+ *                 type: string
+ *                 example: "pepe@mail.com"
+ *               password:
+ *                 type: string
+ *                 example: "123456"
+ *               rol:
+ *                 type: string
+ *                 example: "user"
+ *     responses:
+ *       201:
+ *         description: Usuario creado
+ *       400:
+ *         description: Error de validación
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Sin permisos (no admin)
+ */
 
 /**
  * POST /usuarios/ - Crear nuevo usuario
@@ -66,6 +127,50 @@ route.post('/', authMiddleware, esAdmin, [
 ], crearUsuario);
 
 /**
+ * @openapi
+ * /api/usuarios/{id}:
+ *   put:
+ *     tags:
+ *       - Usuarios
+ *     summary: Actualizar usuario (solo admin)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               rol:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Usuario actualizado
+ *       400:
+ *         description: Error de validación
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Sin permisos (no admin)
+ *       404:
+ *         description: Usuario no encontrado
+ */
+
+/**
  * PUT /usuarios/:id - Actualizar usuario existente
  * Solo admin puede modificar usuarios
  * 
@@ -108,6 +213,32 @@ route.put('/:id', authMiddleware, esAdmin, [
   validateInput
 ], actualizarUsuario);
 
+/**
+ * @openapi
+ * /api/usuarios/{id}:
+ *   delete:
+ *     tags:
+ *       - Usuarios
+ *     summary: Eliminar usuario por ID (solo admin)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario a eliminar
+ *     responses:
+ *       200:
+ *         description: Usuario eliminado
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Sin permisos (no admin)
+ *       404:
+ *         description: Usuario no encontrado
+ */
 /**
  * DELETE /usuarios/:id - Eliminar usuario por ID
  * Solo admin puede borrar usuarios

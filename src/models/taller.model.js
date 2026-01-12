@@ -4,7 +4,7 @@
 const {Schema, model} = require ('mongoose');
 
 /**
- * Esquema para los talleres (cursos/eventos)
+ * Esquema para los talleres
  * 
  * Define todos los campos obligatorios que debe tener cada taller
  * Incluye validaciones como precio mínimo 0 y limpieza de espacios

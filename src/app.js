@@ -4,9 +4,9 @@
 const express = require('express');
 const cors = require('cors')
 const cookieParser = require('cookie-parser')
-require ('dotenv') .config();
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./api-docs');
+require ('dotenv') .config();
 
 const { connection } = require ('./config/dbConnect');
 const homeRoutes = require('./routes/home.routes');
@@ -14,6 +14,8 @@ const tallerRoutes = require ('./routes/taller.routes');
 const authRoutes = require('./routes/auth.routes');
 const usuariosRoutes = require('./routes/user.routes');
 const inscripcionRoutes = require('./routes/inscripcion.routes');
+
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -27,7 +29,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 
 /** 
- * CORS - Permite que React (puerto 5173) hable con el backend 
+ * CORS - Permite que React hable con el backend 
  * */
 app.use(cors());  // Permite todos los orígenes
 
@@ -55,7 +57,7 @@ app.use('/uploads', express.static('public/uploads'));
  * DOCUMENTACION SWAGGER
  */
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 /**
  * ARRANCAR SERVIDOR

@@ -6,9 +6,60 @@ const Inscripcion = require('../models/inscripcion.model');
 const router = express.Router();
 
 /**
- * POST /api/inscripciones
- * Inscribe usuario a un taller
- * Requiere estar logueado
+ * @openapi
+ * /api/inscripciones:
+ *   post:
+ *     tags:
+ *       - Inscripciones
+ *     summary: Inscribir usuario a un taller
+ *     description: Crea una inscripción para el usuario autenticado. No permite inscripciones duplicadas.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               tallerId:
+ *                 type: string
+ *                 example: "6123taller1234567890"
+ *             required:
+ *               - tallerId
+ *     responses:
+ *       200:
+ *         description: Inscripción creada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                   example: true
+ *                 msg:
+ *                   type: string
+ *                   example: "Inscrito correctamente"
+ *                 inscripcion:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: "61a1abc..."
+ *                     usuario:
+ *                       type: string
+ *                       example: "6123user..."
+ *                     taller:
+ *                       type: string
+ *                       example: "6123taller..."
+ *                     fechaInscripcion:
+ *                       type: string
+ *                       example: "2026-01-11T08:00:00.000Z"
+ *       400:
+ *         description: Ya inscrito o datos inválidos
+ *       401:
+ *         description: No autorizado
  */
 router.post('/', authMiddleware, async (req, res) => {
   try {
@@ -51,9 +102,60 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 /**
- * GET /api/inscripciones
- * Obtiene mis inscripciones
- * Requiere estar logueado
+ * @openapi
+ * /api/inscripciones:
+ *   get:
+ *     tags:
+ *       - Inscripciones
+ *     summary: Obtener inscripciones del usuario
+ *     description: Devuelve las inscripciones del usuario autenticado. Cada item incluye la información del taller.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de inscripciones
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: "61a1abc..."
+ *                       fechaInscripcion:
+ *                         type: string
+ *                         example: "2026-01-11T08:00:00.000Z"
+ *                       taller:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                             example: "615fabc..."
+ *                           titulo:
+ *                             type: string
+ *                             example: "Taller de pintura"
+ *                           descripcion:
+ *                             type: string
+ *                             example: "Aprende a pintar con acuarela"
+ *                           precio:
+ *                             type: number
+ *                             example: 25
+ *                           fecha:
+ *                             type: string
+ *                             example: "2026-03-15"
+ *                           categoria:
+ *                             type: string
+ *                             example: "arte"
+ *       401:
+ *         description: No autorizado
  */
 router.get('/', authMiddleware, async (req, res) => {
   try {
@@ -65,12 +167,12 @@ router.get('/', authMiddleware, async (req, res) => {
     //Para cada inscripción, busca el taller por separado
     const talleresCompletos = [];
     for (let inscrip of inscripciones) {
-    const taller = await Taller.findById(inscrip.taller);
-    talleresCompletos.push({
+      const taller = await Taller.findById(inscrip.taller);
+      talleresCompletos.push({
         _id: inscrip._id,          
         fechaInscripcion: inscrip.fechaInscripcion,
         taller: taller
-    });
+      });
     }
     res.json({
       ok: true,
@@ -83,8 +185,40 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 /**
- * DELETE /api/inscripciones/:id
- * Cancela inscripción
+ * @openapi
+ * /api/inscripciones/{id}:
+ *   delete:
+ *     tags:
+ *       - Inscripciones
+ *     summary: Cancelar inscripción
+ *     description: Elimina la inscripción del usuario autenticado (solo su propia inscripción).
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la inscripción a cancelar
+ *     responses:
+ *       200:
+ *         description: Inscripción cancelada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                   example: true
+ *                 msg:
+ *                   type: string
+ *                   example: "Inscripción cancelada"
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Inscripción no encontrada
  */
 router.delete('/:id', authMiddleware, async (req, res) => {
   try {
