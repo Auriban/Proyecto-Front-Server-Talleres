@@ -61,16 +61,46 @@ const router = express.Router();
  *       401:
  *         description: No autorizado
  */
+// en src/routes/inscripcion.routes.js (sustituir el router.post('/') actual)
 router.post('/', authMiddleware, async (req, res) => {
   try {
+    const usuario = req.usuario; // viene del authMiddleware
     const { tallerId } = req.body;
-    
-    // Verifica que ya no esté inscrito
+
+    if (!tallerId) {
+      return res.status(400).json({ 
+        ok: false, 
+        msg: 'Falta id del taller' 
+
+      });
+    }
+
+    // AUTORIZACIÓN: sólo usuarios con role 'user' pueden inscribirse
+    if (usuario.role !== 'user') {
+      return res.status(403).json({ 
+        ok: false, 
+        msg: 'Solo usuarios pueden inscribirse' 
+
+      });
+    }
+
+
+    // Comprueba que el taller existe
+    const taller = await Taller.findById(tallerId);
+    if (!taller) {
+      return res.status(404).json({ 
+        ok: false, 
+        msg: 'Taller no encontrado' 
+        
+      });
+    }
+
+    // Evitar duplicados
     const yaInscrito = await Inscripcion.findOne({
-      usuario: req.usuario._id,
+      usuario: usuario._id,
       taller: tallerId
     });
-    
+
     if (yaInscrito) {
       return res.status(400).json({
         ok: false,
@@ -80,18 +110,18 @@ router.post('/', authMiddleware, async (req, res) => {
 
     // Crea la inscripción
     const inscripcion = new Inscripcion({
-      usuario: req.usuario._id,
+      usuario: usuario._id,
       taller: tallerId
     });
-    
+
     await inscripcion.save();
-    
-    res.json({
+
+    res.status(201).json({
       ok: true,
       msg: 'Inscrito correctamente',
       inscripcion
     });
-    
+
   } catch (error) {
     console.error('Error inscripción:', error);
     res.status(500).json({
