@@ -5,6 +5,17 @@ const User = require('../models/user.nodel');
 const JWT_SECRET = process.env.JWT_SECRET;
 
 /**
+ * Helper: opciones de la cookie según entorno
+ */
+const isProd = process.env.NODE_ENV === 'production';
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProd,                    // solo HTTPS en producción
+  sameSite: isProd ? 'strict' : 'lax', // evitar CSRF en producción
+  maxAge: 24 * 60 * 60 * 1000        // 24 horas
+};
+
+/**
  * REGISTRO - Crea un nuevo usuario
  */
 const register = async (req, res) => {
@@ -30,8 +41,10 @@ const register = async (req, res) => {
 
     const token = jwt.sign({ id: usuario._id }, JWT_SECRET, { expiresIn: '24h' });
 
+    // Guardamos token en cookie httpOnly (más segura)
     res
-      .cookie('token', token, { httpOnly: true })
+      .cookie('token', token, cookieOptions)
+      .status(201)
       .json({
         msg: 'Usuario creado',
         usuario: { id: usuario._id, email, name, role: usuario.role }
@@ -43,7 +56,7 @@ const register = async (req, res) => {
 };
 
 /**
- * LOGIN - Inicia sesión y devuelve token
+ * LOGIN - Inicia sesión y devuelve token en cookie httpOnly
  */
 const login = async (req, res) => {
   try {
@@ -60,18 +73,35 @@ const login = async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    res.json({
-      token,
-      usuario: {
-        _id: usuario._id,
-        name: usuario.name,
-        email: usuario.email,
-        role: usuario.role
-      }
-    });
+    // En lugar de devolver el token en el body, lo guardamos en cookie httpOnly
+    res
+      .cookie('token', token, cookieOptions)
+      .json({
+        msg: 'Login correcto',
+        usuario: {
+          _id: usuario._id,
+          name: usuario.name,
+          email: usuario.email,
+          role: usuario.role
+        }
+      });
   } catch (error) {
     res.status(500).json({ error: 'Error en login' });
   }
+};
+
+/**
+ * LOGOUT - Borra la cookie del token
+ */
+const logout = (req, res) => {
+  // Para asegurarnos, indicamos opciones similares al borrar
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'strict' : 'lax',
+    path: '/'
+  });
+  res.json({ msg: 'Logout correcto' });
 };
 
 /**
@@ -84,5 +114,6 @@ const perfil = (req, res) => {
 module.exports = {
   register,
   login,
-  perfil
+  perfil,
+  logout
 };

@@ -30,8 +30,13 @@ app.use(express.json());
 
 /** 
  * CORS - Permite que React hable con el backend 
+ * - Si usa cookies desde otro origen, necesita credentials: true y origin concreto
  * */
-app.use(cors());  // Permite todos los orígenes
+const corsOptions = {
+  origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173', // cambia por el puerto de front
+  credentials: true
+};
+app.use(cors(corsOptions));  // Permite el origen configurado y credenciales
 
 /** 
  * Lee cookies (para el token de autenticación)
