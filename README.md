@@ -1,153 +1,203 @@
-# Proyecto Front + Server — Talleres
+# API REST de Talleres (Node.js + Express)
 
-Qué es
-------
-Este repositorio contiene el servidor (y el front si lo añadís) para gestionar talleres: crear, listar, editar y borrar talleres. También tiene manejo de usuarios, autenticación y subida de imágenes.
+## Descripción
 
-Resumen rápido
---------------
-- Backend: Node.js con Express.
-- Base de datos: MongoDB via Mongoose.
-- Vistas/plantillas: EJS (si usás render desde el servidor).
-- Autenticación: JWT.
-- Passwords: bcryptjs.
-- Subida de archivos: multer.
-- Docs API: Swagger (swagger-jsdoc + swagger-ui-express).
-- Mensajes en cliente: SweetAlert2.
+Este repositorio contiene el **backend** de la aplicación de talleres.
+Es una **API REST** desarrollada con **Node.js y Express**, conectada a **MongoDB** mediante **Mongoose**.
 
-Requisitos
----------
-- Node.js (recomiendo v14+)
-- npm (o yarn)
-- MongoDB (local o en la nube)
+La API permite:
 
-Instalación y ejecución
------------------------
-1. Clona el repo:
-   - git clone https://github.com/Auriban/Proyecto-Front-Server-Talleres.git
-   - cd Proyecto-Front-Server-Talleres
+* Gestión de usuarios y roles
+* Autenticación con JWT
+* CRUD de talleres
+* Inscripciones a talleres
+* Subida y gestión de imágenes
+* Documentación automática con Swagger
 
-2. Instala dependencias:
-   - npm install
+La documentación de la API está disponible en:
 
-3. Variables de entorno
-   - Crea un archivo `.env` en la raíz del proyecto con al menos:
-     - PORT=3000
-     - DB_URI=mongodb://localhost:27017/talleres   (o la URL de tu MongoDB)
-     - JWT_SECRET=tu_clave_secreta
-   - Nota: en el código se usa `process.env.DB_URI` para la conexión a la BBDD.
+```
+/api/docs
+```
 
-4. Ejecutar en desarrollo:
-   - npm run dev
-   - Esto usa `nodemon src/app.js`.
+---
 
-5. Ejecutar en producción:
-   - npm start
-   - Esto ejecuta `node src/app.js`.
+## Tecnologías y dependencias
 
-Scripts (tal como están en package.json)
----------------------------------------
-- npm run dev  — arranca con nodemon (`nodemon src/app.js`)
-- npm start    — arranca con node (`node src/app.js`)
-- npm test     — script por defecto (no hay tests configurados)
+* **Node.js + Express** — servidor y API REST
+* **MongoDB + Mongoose** — base de datos
+* **dotenv** — variables de entorno
+* **bcryptjs** — hash de contraseñas
+* **jsonwebtoken** — autenticación JWT
+* **express-validator** — validación de datos
+* **cors** y **cookie-parser** — manejo de peticiones
+* **multer** — subida de archivos
+* **swagger-jsdoc** + **swagger-ui-express** — documentación
+* **nodemon** — entorno de desarrollo
+* **npm** — gestor de dependencias
 
-Puntos importantes del servidor
--------------------------------
-- Archivo principal: `src/app.js`
-  - Monta rutas:
-    - `/api/auth`       -> auth.routes.js
-    - `/api/talleres`   -> taller.routes.js
-    - `/api/usuarios`   -> user.routes.js
-    - `/api/home`       -> home.routes.js
-    - `/api/inscripciones` -> inscripcion.routes.js
-  - Sirve archivos subidos en `/uploads` y `public/uploads`.
-  - Documentación Swagger en `/api/docs`.
-  - Conecta a la BBDD usando `src/config/dbConnect.js` (usa `process.env.DB_URI`).
+---
 
-Estructura relevante 
----------------------------------------------
-- src/
-  - app.js
-  - api-docs.js
-  - config/
-    - dbConnect.js
-  - routes/
-    - auth.routes.js
-    - taller.routes.js
-    - user.routes.js
-    - home.routes.js
-    - inscripcion.routes.js
-  - controllers/        (lógica de negocio)
-  - models/
-    - taller.model.js
-    - home.model.js
-    - user.nodel.js     <- atención: el archivo de usuario tiene un nombre con typo (`user.nodel.js`)
-    - inscripcion.model.js
-  - middleware/
-    - (middleware para auth, uploads, validaciones, etc.)
-- public/                (estáticos)
-- uploads/               (imágenes subidas)
+## Variables de entorno
 
-Dependencias principales (según package.json)
----------------------------------------------
-- express
-- mongoose
-- dotenv
-- ejs
-- jsonwebtoken
-- bcryptjs
-- multer
-- swagger-jsdoc
-- swagger-ui-express
-- cookie-parser
-- cors
-- express-validator
-- sweetalert2
+Crea un archivo `.env` en la raíz del proyecto.
+Las variables mínimas requeridas son:
 
-Rutas principales y cómo usarlas
--------------------------------
-(estas rutas vienen de los archivos en `src/routes`)
+```env
+PORT=3000
+DB_URI=mongodb://localhost:27017/talleres
+JWT_SECRET=tu_clave_secreta
+```
 
-Auth
-- POST /api/auth/register — registrar usuario
-  - Body: { name, email, password, role }
-- POST /api/auth/login — login
-  - Body: { email, password }
-- GET  /api/auth/perfil — obtener perfil (requiere token)
+La conexión a la base de datos se configura mediante `process.env.DB_URI`.
+Archivo relacionado: `src/config/dbConnect.js`.
 
-Usuarios (solo admin)
-- GET  /api/usuarios/ — listar todos los usuarios (admin)
-- POST /api/usuarios/ — crear usuario (admin)
+---
 
-Talleres
-- GET  /api/talleres/ — listar todos los talleres (público)
-- GET  /api/talleres/:id — obtener taller por id (público)
-- POST /api/talleres/creartaller — crear taller (admin, admite imagen multipart)
-- PUT  /api/talleres/:id — editar taller (admin)
-- DELETE /api/talleres/:id — borrar taller (admin)
+## Estructura del proyecto
 
-Home
-- GET  /api/home/public — obtener contenido público de la home
-- PUT  /api/home/ — actualizar contenido de la home (admin, admite varios archivos)
+```text
+├── src/
+│   ├── app.js            # Entrada principal
+│   ├── config/           # Configuración (DB, etc.)
+│   ├── routes/           # Rutas de la API
+│   ├── controllers/      # Lógica de negocio
+│   ├── models/           # Modelos de Mongoose
+│   └── middlewares/      # Auth, validaciones, uploads
+├── public/               # Archivos estáticos
+├── uploads/              # Archivos subidos
+├── .env                  # Variables de entorno (no commitear)
+├── package.json
+└── README.md
+```
 
-Inscripciones
-- POST /api/inscripciones/ — inscribir usuario a taller (requiere token)
-- GET  /api/inscripciones/ — (devuelve inscripciones del usuario autenticado)
+---
 
-Subidas y archivos
-------------------
-- Las imágenes se guardan en carpetas dentro de `public/uploads` o `uploads`.
-- En `src/app.js` están servidas en `/uploads` para que el front pueda mostrarlas.
+## Modelos principales
 
-Usuarios por defecto (ejemplo para pruebas)
--------------------------------------------
-No hay seeds por defecto en el repo, pero podés crear estos usuarios manualmente:
-- Admin:
-  - Email: admin@talleres.com
-  - Password: admin123
-  - Rol: admin
-- Usuario demo:
-  - Email: a1@gmail.com
-  - Password: admin123
-  - Rol: user
+* **Usuario** — usuarios y roles (`admin`, `user`)
+* **Taller** — datos del taller (título, descripción, fecha, imagen, etc.)
+* **Inscripción** — relación entre usuarios y talleres
+
+---
+
+## Seguridad y validaciones
+
+* Autenticación con **JWT**
+* Rutas protegidas mediante middleware
+* Control de roles (solo administradores)
+* Validación de datos con **express-validator**
+* Middlewares para autenticación, permisos y subida de archivos
+
+---
+
+## Rutas principales
+
+Todas las rutas están montadas bajo `/api`.
+
+### Autenticación (`/api/auth`)
+
+* `POST /api/auth/signup` — Registro de usuario
+* `POST /api/auth/login` — Inicio de sesión
+* `GET /api/auth/renovar` — Renovar token 
+
+### Usuarios (`/api/usuarios`)
+
+* `POST /api/usuarios/crear` — Crear usuario (admin)
+* `GET /api/usuarios/obtener/:id` — Obtener usuario por ID
+* `PUT /api/usuarios/editar/:id` — Editar usuario (admin)
+* `DELETE /api/usuarios/eliminar/:id` — Eliminar usuario (admin)
+
+### Talleres (`/api/talleres`)
+
+* `GET /api/talleres` — Listar talleres
+* `GET /api/talleres/:id` — Obtener taller
+* `POST /api/talleres` — Crear taller (admin)
+* `PUT /api/talleres/:id` — Editar taller (admin)
+* `DELETE /api/talleres/:id` — Eliminar taller (admin)
+* `POST /api/talleres/buscar` — Buscar talleres
+
+### Inscripciones (`/api/inscripciones`)
+
+* `POST /api/inscripciones` — Inscribirse a un taller
+* `GET /api/inscripciones/user/:id` — Inscripciones del usuario
+* `DELETE /api/inscripciones/:id` — Anular inscripción
+
+### Otros
+
+* `/api/home` — datos públicos
+* `/api/docs` — documentación Swagger
+
+---
+
+## Subida de imágenes
+
+* `POST /api/uploads` — Subir una imagen (`imagen`)
+* `POST /api/uploads/multiple` — Subir múltiples imágenes (`imagenes`)
+* `GET /api/uploads` — Listar archivos
+* `DELETE /api/uploads/:filename` — Eliminar archivo
+
+**Notas:**
+
+* Se utiliza **Multer** para manejar uploads
+* Los archivos se almacenan en `uploads/`
+* Se sirven como estáticos desde `public/uploads`
+* Solo usuarios con rol **admin** pueden subir imágenes asociadas a recursos
+
+---
+
+## Scripts disponibles (npm)
+
+* `npm run dev` — desarrollo con nodemon
+* `npm start` — ejecución en producción
+
+---
+
+## Ejecución local
+
+1. Clonar el repositorio:
+
+   ```bash
+   git clone https://github.com/Auriban/Proyecto-Front-Server-Talleres.git
+   cd Proyecto-Front-Server-Talleres
+   ```
+
+2. Instalar dependencias:
+
+   ```bash
+   npm install
+   ```
+
+3. Crear archivo `.env`:
+
+   ```env
+   PORT=3000
+   DB_URI=mongodb://localhost:27017/talleres
+   JWT_SECRET=tu_clave_secreta
+   ```
+
+4. Crear carpeta de uploads:
+
+   ```bash
+   mkdir uploads
+   ```
+
+5. Ejecutar:
+
+   ```bash
+   npm run dev    # desarrollo
+   npm start      # producción
+   ```
+
+6. Acceder:
+
+   * API: [http://localhost:3000](http://localhost:3000)
+   * Swagger: [http://localhost:3000/api/docs](http://localhost:3000/api/docs)
+
+---
+
+## Despliegue
+
+El backend y la base de datos están desplegados en **Render**.
+Configurar las variables de entorno en el entorno de producción.
 
