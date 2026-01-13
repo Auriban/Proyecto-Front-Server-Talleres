@@ -6,15 +6,14 @@ const cors = require('cors')
 const cookieParser = require('cookie-parser')
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./api-docs');
-require ('dotenv') .config();
+require('dotenv').config();
 
-const { connection } = require ('./config/dbConnect');
+const { connection } = require('./config/dbConnect');
 const homeRoutes = require('./routes/home.routes');
-const tallerRoutes = require ('./routes/taller.routes');
+const tallerRoutes = require('./routes/taller.routes');
 const authRoutes = require('./routes/auth.routes');
 const usuariosRoutes = require('./routes/user.routes');
 const inscripcionRoutes = require('./routes/inscripcion.routes');
-
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -25,22 +24,28 @@ const port = process.env.PORT || 3000;
 
 /** 
  * Permite leer JSON en las peticiones POST/PUT 
- * */
+ */
 app.use(express.json());
 
 /** 
- * CORS - Permite que React hable con el backend 
- * - Si usa cookies desde otro origen, necesita credentials: true y origin concreto
- * */
+ * CORS - Permite que front desplegado hable con el backend 
+ * - Define el origen en la variable de entorno CLIENT_ORIGIN
+ * - credentials: true es necesario para enviar cookies
+ */
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+
 const corsOptions = {
-  origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173', // cambia por el puerto de front
-  credentials: true
+  origin: CLIENT_ORIGIN, // debe ser la URL exacta del front en Render
+  credentials: true,
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
-app.use(cors(corsOptions));  // Permite el origen configurado y credenciales
+
+app.use(cors(corsOptions));
 
 /** 
  * Lee cookies (para el token de autenticación)
- *  */
+ */
 app.use(cookieParser());
 
 /**
@@ -50,7 +55,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/talleres', tallerRoutes);
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/home', homeRoutes);
-app.use('/api/inscripciones',inscripcionRoutes);
+app.use('/api/inscripciones', inscripcionRoutes);
 
 /**
  * ARCHIVOS ESTÁTICOS - Sirve las imágenes subidas
@@ -61,18 +66,12 @@ app.use('/uploads', express.static('public/uploads'));
 /**
  * DOCUMENTACION SWAGGER
  */
-
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 /**
  * ARRANCAR SERVIDOR
- * 
- * Escucha en el puerto y conecta a MongoDB
  */
 app.listen(port, () => {
-    console.log(`Servidor activo en puerto ${port} 🐙`);
-    /**
-     *  Conecta a la base de datos 
-     * */
-    connection();
+  console.log(`Servidor activo en puerto ${port} 🐙`);
+  connection();
 });

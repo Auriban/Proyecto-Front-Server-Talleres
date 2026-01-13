@@ -6,12 +6,13 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 /**
  * Helper: opciones de la cookie según entorno
+ * - En producción use secure: true y sameSite: 'none' para permitir cookies cross-site
  */
 const isProd = process.env.NODE_ENV === 'production';
 const cookieOptions = {
   httpOnly: true,
-  secure: isProd,                    // solo HTTPS en producción
-  sameSite: isProd ? 'strict' : 'lax', // evitar CSRF en producción
+  secure: isProd,                    // true en producción (requiere HTTPS)
+  sameSite: isProd ? 'none' : 'lax', // 'none' en producción para permitir cross-site
   maxAge: 24 * 60 * 60 * 1000        // 24 horas
 };
 
